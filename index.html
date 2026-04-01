@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ワンちゃんケアPAM設計2</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #eef7fb;
+      color: #234;
+    }
+
+    header {
+      background: #d7eef7;
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid #b8dce8;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: #466;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      border: none;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      font-size: 14px;
+      min-width: 150px;
+      min-height: 58px;
+      color: #356;
+      font-weight: 600;
+    }
+
+    .tab-btn.active {
+      background: #7bc8e6;
+      color: white;
+      font-weight: bold;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #245;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      color: #356;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #456;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #b8dce8;
+      font-size: 14px;
+      background: #fdfefe;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .row > * {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      background: #7bc8e6;
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    button.secondary {
+      background: #91a9b3;
+    }
+
+    button.danger {
+      background: #d96b6b;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .list-item {
+      border: 1px solid #dceef5;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #f9fdff;
+    }
+
+    .list-item strong {
+      font-size: 16px;
+      color: #245;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #567;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #dff3fb;
+      color: #245;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-top: 4px;
+    }
+
+    .section-title {
+      margin-top: 18px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #d9ebf2;
+      font-weight: bold;
+      color: #356;
+    }
+
+    .empty {
+      color: #789;
+      font-size: 14px;
+      padding: 8px 0;
+    }
+
+    .summary-box {
+      background: #f3fbfe;
+      border: 1px solid #d7edf5;
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f7fcfe;
+      border: 1px solid #d9ebf2;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin: 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .note-box {
+      background: #f8fcff;
+      border: 1px solid #d9ebf2;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #456;
+    }
+
+    .price-preview {
+      background: #eef9fd;
+      border: 1px solid #cfeaf4;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 15px;
+      color: #245;
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 20px;
+      }
+
+      .tab-btn {
+        min-width: 120px;
+        font-size: 13px;
+        min-height: 52px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ワンちゃんケアPAM設計2</h1>
+    <p>犬ごとの継続記録・ご家庭の気づき・訪問履歴を保存する最小版</p>
+  </header>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('dashboard')">ダッシュボード</button>
+      <button class="tab-btn" onclick="showTab('dogForm')">ワンちゃん登録</button>
+      <button class="tab-btn" onclick="showTab('visitForm')">訪問記録入力</button>
+      <button class="tab-btn" onclick="showTab('dogList')">ワンちゃん一覧</button>
+      <button class="tab-btn" onclick="showTab('history')">履歴表示</button>
+    </div>
+
+    <section id="dashboard" class="tab-section">
+      <div class="card">
+        <h2>今日の概要</h2>
+        <div class="grid">
+          <div class="summary-box">
+            <strong>登録ワンちゃん数</strong>
+            <div id="dogCount" style="font-size: 28px; margin-top: 6px;">0</div>
+          </div>
+          <div class="summary-box">
+            <strong>訪問記録数</strong>
+            <div id="visitCount" style="font-size: 28px; margin-top: 6px;">0</div>
+          </div>
+          <div class="summary-box">
+            <strong>今日の訪問件数</strong>
+            <div id="todayVisitCount" style="font-size: 28px; margin-top: 6px;">0</div>
+          </div>
+        </div>
+
+        <div class="section-title">最近の記録</div>
+        <div id="recentVisits" class="empty">まだ記録がありません。</div>
+      </div>
+    </section>
+
+    <section id="dogForm" class="tab-section hidden">
+      <div class="card">
+        <h2>ワンちゃん基本プロフィール登録</h2>
+        <div class="grid">
+          <div>
+            <label>家庭番号</label>
+            <input id="familyId" placeholder="例: H-001" />
+          </div>
+          <div>
+            <label>犬番号</label>
+            <input id="dogId" placeholder="例: D-001" />
+          </div>
+          <div>
+            <label>名前</label>
+            <input id="dogName" placeholder="例: キララ" />
+          </div>
+          <div>
+            <label>犬種</label>
+            <input id="breed" placeholder="例: トイプードル" />
+          </div>
+          <div>
+            <label>性別</label>
+            <select id="sex">
+              <option value="">選択してください</option>
+              <option>男の子</option>
+              <option>女の子</option>
+            </select>
+          </div>
+          <div>
+            <label>年齢</label>
+            <input id="age" placeholder="例: 7" />
+          </div>
+          <div>
+            <label>生年月日</label>
+            <input id="birthday" type="date" />
+          </div>
+          <div>
+            <label>体重</label>
+            <input id="weight" placeholder="例: 4.2kg" />
+          </div>
+        </div>
+
+        <div class="section-title">補足情報</div>
+        <div class="grid">
+          <div>
+            <label>持病・既往歴</label>
+            <textarea id="medical"></textarea>
+          </div>
+          <div>
+            <label>性格傾向</label>
+            <textarea id="personality"></textarea>
+          </div>
+          <div>
+            <label>苦手なこと</label>
+            <textarea id="dislikes"></textarea>
+          </div>
+          <div>
+            <label>トリミング時の注意</label>
+            <textarea id="trimNote"></textarea>
+          </div>
+        </div>
+
+        <div class="section-title">ご家庭情報</div>
+        <div class="grid">
+          <div>
+            <label>飼い主名</label>
+            <input id="ownerName" />
+          </div>
+          <div>
+            <label>住所</label>
+            <input id="address" />
+          </div>
+          <div>
+            <label>連絡先</label>
+            <input id="phone" inputmode="numeric" maxlength="11" placeholder="自宅10桁 / 携帯11桁（ハイフンなし）" />
+            <div class="note-box">電話番号は10桁または11桁で入力してください。</div>
+          </div>
+          <div>
+            <label>訪問時の注意</label>
+            <textarea id="homeNote"></textarea>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button onclick="saveDog()">登録する</button>
+          <button class="secondary" onclick="clearDogForm()">入力を消す</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="visitForm" class="tab-section hidden">
+      <div class="card">
+        <h2>訪問記録入力</h2>
+
+        <div class="grid">
+          <div>
+            <label>対象ワンちゃん</label>
+            <select id="visitDogSelect"></select>
+          </div>
+          <div>
+            <label>訪問日</label>
+            <input id="visitDate" type="date" />
+          </div>
+          <div>
+            <label>担当スタッフ番号</label>
+            <input id="staffId" placeholder="例: S-001" />
+          </div>
+          <div>
+            <label>担当スタッフ名</label>
+            <input id="staffName" placeholder="例: 山田" />
+          </div>
+        </div>
+
+        <div class="section-title">本日の実施内容</div>
+        <div class="checkbox-group" id="serviceGroup"></div>
+
+        <div class="section-title">ワンちゃんの状態</div>
+
+        <h3>全体状態</h3>
+        <div class="checkbox-group" id="conditionGroup"></div>
+
+        <h3>毛・皮膚</h3>
+        <div class="checkbox-group" id="skinGroup"></div>
+
+        <h3>耳</h3>
+        <div class="checkbox-group" id="earGroup"></div>
+
+        <h3>爪・足回り</h3>
+        <div class="checkbox-group" id="footGroup"></div>
+
+        <h3>目・口・表情</h3>
+        <div class="checkbox-group" id="faceGroup"></div>
+
+        <h3>動き・姿勢</h3>
+        <div class="checkbox-group" id="moveGroup"></div>
+
+        <div class="section-title">ご家庭からの気づき</div>
+        <div class="grid">
+          <div>
+            <label>ご家庭からの気づき</label>
+            <textarea id="familyNotice" placeholder="食欲・睡眠・散歩・排泄・最近の変化など"></textarea>
+          </div>
+        </div>
+
+        <div class="section-title">暮らし環境の気づき</div>
+        <div class="grid">
+          <div>
+            <label>暮らし環境の気づき</label>
+            <textarea id="homeNotice" placeholder="床のすべり、段差、空調、掃除や補修の必要など"></textarea>
+          </div>
+        </div>
+
+        <div class="section-title">次回申し送り</div>
+        <div class="grid">
+          <div>
+            <label>次回申し送り</label>
+            <textarea id="nextNote"></textarea>
+          </div>
+        </div>
+
+        <div class="section-title">料金</div>
+        <div class="grid">
+          <div>
+            <label>基本料金</label>
+            <select id="basePrice" onchange="updatePricePreview()">
+              <option value="16000">16,000円</option>
+            </select>
+            <div class="note-box">基本料金は16,000円固定です。</div>
+          </div>
+          <div>
+            <label>追加料金</label>
+            <select id="extraPrice" onchange="updatePricePreview()">
+              <option value="0">0円</option>
+              <option value="1000">1,000円</option>
+              <option value="2000">2,000円</option>
+              <option value="3000">3,000円</option>
+              <option value="4000">4,000円</option>
+              <option value="5000">5,000円</option>
+              <option value="6000">6,000円</option>
+              <option value="7000">7,000円</option>
+              <option value="8000">8,000円</option>
+              <option value="9000">9,000円</option>
+              <option value="10000">10,000円</option>
+            </select>
+            <div class="note-box">1,000円単位で選択します。</div>
+          </div>
+          <div>
+            <label>割引</label>
+            <select id="discount" onchange="updatePricePreview()">
+              <option value="0">0円</option>
+              <option value="1000">1,000円</option>
+              <option value="2000">2,000円</option>
+              <option value="3000">3,000円</option>
+              <option value="4000">4,000円</option>
+              <option value="5000">5,000円</option>
+              <option value="6000">6,000円</option>
+              <option value="7000">7,000円</option>
+              <option value="8000">8,000円</option>
+              <option value="9000">9,000円</option>
+              <option value="10000">10,000円</option>
+            </select>
+            <div class="note-box">1,000円単位で選択します。</div>
+          </div>
+          <div>
+            <label>支払い状況</label>
+            <select id="paymentStatus">
+              <option>済</option>
+              <option>未収</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="price-preview" id="pricePreview">合計料金：16,000円</div>
+
+        <div class="button-row">
+          <button onclick="saveVisit()">訪問記録を保存</button>
+          <button class="secondary" onclick="clearVisitForm()">入力を消す</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="dogList" class="tab-section hidden">
+      <div class="card">
+        <h2>ワンちゃん一覧</h2>
+        <div class="row">
+          <div>
+            <label>検索</label>
+            <input id="searchDog" placeholder="名前・犬種・番号で検索" oninput="renderDogList()" />
+          </div>
+        </div>
+        <div id="dogListArea" class="empty">まだ登録がありません。</div>
+      </div>
+    </section>
+
+    <section id="history" class="tab-section hidden">
+      <div class="card">
+        <h2>訪問履歴表示</h2>
+        <div class="row">
+          <div>
+            <label>対象ワンちゃん</label>
+            <select id="historyDogSelect" onchange="renderHistory()"></select>
+          </div>
+        </div>
+        <div id="historyArea" class="empty">履歴がありません。</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY_DOGS = "pamDogs_v2";
+    const STORAGE_KEY_VISITS = "pamVisits_v2";
+
+    const services = ["シャンプー", "カット", "爪切り", "耳掃除", "肛門腺", "足裏", "部分ケア", "相談のみ", "その他"];
+    const conditions = ["元気", "やや疲れ気味", "落ち着かない", "緊張強め", "高齢でゆっくり対応"];
+    const skins = ["毛玉少", "毛玉中", "毛玉多", "乾燥", "赤み", "かゆみ気味", "フケ", "ベタつき"];
+    const ears = ["問題なし", "汚れ少", "汚れ多", "においあり", "赤みあり", "要注意"];
+    const feet = ["問題なし", "伸びあり", "足裏毛多め", "歩行気になる", "触られるのを嫌がる"];
+    const faces = ["目やに少", "目やに多", "口臭気になる", "表情良好", "元気なし"];
+    const moves = ["問題なし", "後肢弱め", "立位不安定", "段差注意", "抱き上げ注意"];
+
+    function getDogs() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_DOGS) || "[]");
+    }
+
+    function getVisits() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_VISITS) || "[]");
+    }
+
+    function saveDogs(dogs) {
+      localStorage.setItem(STORAGE_KEY_DOGS, JSON.stringify(dogs));
+    }
+
+    function saveVisits(visits) {
+      localStorage.setItem(STORAGE_KEY_VISITS, JSON.stringify(visits));
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll(".tab-section").forEach(sec => sec.classList.add("hidden"));
+      document.getElementById(tabId).classList.remove("hidden");
+
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      [...document.querySelectorAll(".tab-btn")].find(btn => btn.getAttribute("onclick").includes(tabId)).classList.add("active");
+
+      if (tabId === "dogList") renderDogList();
+      if (tabId === "history") renderHistory();
+      if (tabId === "dashboard") renderDashboard();
+      if (tabId === "visitForm") updatePricePreview();
+    }
+
+    function createCheckboxes(containerId, items, prefix) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = items.map((item, index) => `
+        <label>
+          <input type="checkbox" value="${item}" id="${prefix}_${index}">
+          <span>${item}</span>
+        </label>
+      `).join("");
+    }
+
+    function getCheckedValues(containerId) {
+      return [...document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`)].map(el => el.value);
+    }
+
+    function clearChecks(containerId) {
+      document.querySelectorAll(`#${containerId} input[type="checkbox"]`).forEach(el => el.checked = false);
+    }
+
+    function normalizePhone(phone) {
+      return phone.replace(/[^0-9]/g, "");
+    }
+
+    function isValidPhone(phone) {
+      return phone.length === 10 || phone.length === 11;
+    }
+
+    function saveDog() {
+      const rawPhone = document.getElementById("phone").value.trim();
+      const cleanPhone = normalizePhone(rawPhone);
+
+      const dog = {
+        familyId: document.getElementById("familyId").value.trim(),
+        dogId: document.getElementById("dogId").value.trim(),
+        dogName: document.getElementById("dogName").value.trim(),
+        breed: document.getElementById("breed").value.trim(),
+        sex: document.getElementById("sex").value,
+        age: document.getElementById("age").value.trim(),
+        birthday: document.getElementById("birthday").value,
+        weight: document.getElementById("weight").value.trim(),
+        medical: document.getElementById("medical").value.trim(),
+        personality: document.getElementById("personality").value.trim(),
+        dislikes: document.getElementById("dislikes").value.trim(),
+        trimNote: document.getElementById("trimNote").value.trim(),
+        ownerName: document.getElementById("ownerName").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        phone: cleanPhone,
+        homeNote: document.getElementById("homeNote").value.trim()
+      };
+
+      if (!dog.dogName || !dog.dogId) {
+        alert("犬番号と名前は入力してください。");
+        return;
+      }
+
+      if (cleanPhone && !isValidPhone(cleanPhone)) {
+        alert("電話番号は10桁または11桁で入力してください。");
+        return;
+      }
+
+      const dogs = getDogs();
+      const exists = dogs.findIndex(d => d.dogId === dog.dogId);
+
+      if (exists >= 0) {
+        dogs[exists] = dog;
+      } else {
+        dogs.push(dog);
+      }
+
+      saveDogs(dogs);
+      clearDogForm();
+      refreshDogSelectors();
+      renderDogList();
+      renderDashboard();
+      alert("ワンちゃん情報を保存しました。");
+    }
+
+    function clearDogForm() {
+      [
+        "familyId", "dogId", "dogName", "breed", "sex", "age", "birthday", "weight",
+        "medical", "personality", "dislikes", "trimNote",
+        "ownerName", "address", "phone", "homeNote"
+      ].forEach(id => document.getElementById(id).value = "");
+    }
+
+    function refreshDogSelectors() {
+      const dogs = getDogs();
+      const options = dogs.length
+        ? dogs.map(d => `<option value="${d.dogId}">${d.dogName} / ${d.breed || "犬種未入力"} / ${d.dogId}</option>`).join("")
+        : `<option value="">ワンちゃんを先に登録してください</option>`;
+
+      document.getElementById("visitDogSelect").innerHTML = options;
+      document.getElementById("historyDogSelect").innerHTML =
+        `<option value="">すべて表示</option>` +
+        (dogs.length ? dogs.map(d => `<option value="${d.dogId}">${d.dogName} / ${d.dogId}</option>`).join("") : "");
+    }
+
+    function updatePricePreview() {
+      const basePrice = Number(document.getElementById("basePrice").value || 16000);
+      const extraPrice = Number(document.getElementById("extraPrice").value || 0);
+      const discount = Number(document.getElementById("discount").value || 0);
+      const total = basePrice + extraPrice - discount;
+
+      document.getElementById("pricePreview").textContent =
+        `合計料金：${total.toLocaleString("ja-JP")}円`;
+    }
+
+    function saveVisit() {
+      const dogId = document.getElementById("visitDogSelect").value;
+      if (!dogId) {
+        alert("対象ワンちゃんを選んでください。");
+        return;
+      }
+
+      const basePrice = Number(document.getElementById("basePrice").value || 16000);
+      const extraPrice = Number(document.getElementById("extraPrice").value || 0);
+      const discount = Number(document.getElementById("discount").value || 0);
+
+      const visit = {
+        id: "V-" + Date.now(),
+        dogId,
+        visitDate: document.getElementById("visitDate").value,
+        staffId: document.getElementById("staffId").value.trim(),
+        staffName: document.getElementById("staffName").value.trim(),
+        services: getCheckedValues("serviceGroup"),
+        conditions: getCheckedValues("conditionGroup"),
+        skins: getCheckedValues("skinGroup"),
+        ears: getCheckedValues("earGroup"),
+        feet: getCheckedValues("footGroup"),
+        faces: getCheckedValues("faceGroup"),
+        moves: getCheckedValues("moveGroup"),
+        familyNotice: document.getElementById("familyNotice").value.trim(),
+        homeNotice: document.getElementById("homeNotice").value.trim(),
+        nextNote: document.getElementById("nextNote").value.trim(),
+        basePrice,
+        extraPrice,
+        discount,
+        total: basePrice + extraPrice - discount,
+        paymentStatus: document.getElementById("paymentStatus").value
+      };
+
+      if (!visit.visitDate) {
+        alert("訪問日を入力してください。");
+        return;
+      }
+
+      const visits = getVisits();
+      visits.unshift(visit);
+      saveVisits(visits);
+      clearVisitForm();
+      renderDashboard();
+      renderHistory();
+      alert("訪問記録を保存しました。");
+    }
+
+    function clearVisitForm() {
+      document.getElementById("visitDate").value = todayStr();
+      document.getElementById("staffId").value = "";
+      document.getElementById("staffName").value = "";
+      document.getElementById("familyNotice").value = "";
+      document.getElementById("homeNotice").value = "";
+      document.getElementById("nextNote").value = "";
+      document.getElementById("basePrice").value = "16000";
+      document.getElementById("extraPrice").value = "0";
+      document.getElementById("discount").value = "0";
+      document.getElementById("paymentStatus").value = "済";
+
+      clearChecks("serviceGroup");
+      clearChecks("conditionGroup");
+      clearChecks("skinGroup");
+      clearChecks("earGroup");
+      clearChecks("footGroup");
+      clearChecks("faceGroup");
+      clearChecks("moveGroup");
+      updatePricePreview();
+    }
+
+    function renderDogList() {
+      const dogs = getDogs();
+      const keyword = document.getElementById("searchDog").value.trim().toLowerCase();
+      const area = document.getElementById("dogListArea");
+
+      const filtered = dogs.filter(d =>
+        [d.dogName, d.breed, d.dogId, d.familyId, d.ownerName].join(" ").toLowerCase().includes(keyword)
+      );
+
+      if (!filtered.length) {
+        area.innerHTML = `<div class="empty">該当するワンちゃんがいません。</div>`;
+        return;
+      }
+
+      area.innerHTML = filtered.map(d => `
+        <div class="list-item">
+          <strong>${escapeHtml(d.dogName)}</strong>
+          <div class="small">${escapeHtml(d.breed || "犬種未入力")} / ${escapeHtml(d.age || "-")}歳 / ${escapeHtml(d.sex || "-")}</div>
+          <div class="small">犬番号: ${escapeHtml(d.dogId)} / 家庭番号: ${escapeHtml(d.familyId || "-")}</div>
+          <div class="small">飼い主: ${escapeHtml(d.ownerName || "-")} / 連絡先: ${escapeHtml(d.phone || "-")}</div>
+          <div style="margin-top:8px;">
+            ${d.trimNote ? `<span class="badge">注意: ${escapeHtml(shortText(d.trimNote, 18))}</span>` : ""}
+            ${d.medical ? `<span class="badge">既往: ${escapeHtml(shortText(d.medical, 18))}</span>` : ""}
+          </div>
+          <div class="button-row">
+            <button onclick="selectDogForVisit('${d.dogId}')">この子で記録入力</button>
+            <button class="secondary" onclick="showDogHistory('${d.dogId}')">履歴を見る</button>
+            <button class="danger" onclick="deleteDog('${d.dogId}')">削除</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderHistory() {
+      const visits = getVisits();
+      const dogs = getDogs();
+      const selectedDogId = document.getElementById("historyDogSelect").value;
+      const area = document.getElementById("historyArea");
+
+      const filtered = selectedDogId ? visits.filter(v => v.dogId === selectedDogId) : visits;
+
+      if (!filtered.length) {
+        area.innerHTML = `<div class="empty">履歴がありません。</div>`;
+        return;
+      }
+
+      area.innerHTML = filtered.map(v => {
+        const dog = dogs.find(d => d.dogId === v.dogId);
+        return `
+          <div class="list-item">
+            <strong>${escapeHtml(dog ? dog.dogName : v.dogId)}</strong>
+            <div class="small">${escapeHtml(v.visitDate)} / 担当: ${escapeHtml(v.staffName || "-")} (${escapeHtml(v.staffId || "-")})</div>
+            <div style="margin-top:8px;">
+              ${renderBadges(v.services)}
+              ${renderBadges(v.conditions)}
+              ${renderBadges(v.skins)}
+              ${renderBadges(v.ears)}
+              ${renderBadges(v.feet)}
+              ${renderBadges(v.faces)}
+              ${renderBadges(v.moves)}
+            </div>
+            ${v.familyNotice ? `<div class="summary-box"><strong>ご家庭からの気づき</strong><br>${escapeHtml(v.familyNotice)}</div>` : ""}
+            ${v.homeNotice ? `<div class="summary-box"><strong>暮らし環境の気づき</strong><br>${escapeHtml(v.homeNotice)}</div>` : ""}
+            ${v.nextNote ? `<div class="summary-box"><strong>次回申し送り</strong><br>${escapeHtml(v.nextNote)}</div>` : ""}
+            <div class="summary-box">
+              <strong>料金</strong><br>
+              基本: ${v.basePrice.toLocaleString("ja-JP")}円 /
+              追加: ${v.extraPrice.toLocaleString("ja-JP")}円 /
+              割引: ${v.discount.toLocaleString("ja-JP")}円 /
+              合計: ${v.total.toLocaleString("ja-JP")}円 /
+              支払い: ${escapeHtml(v.paymentStatus)}
+            </div>
+            <div class="button-row">
+              <button class="danger" onclick="deleteVisit('${v.id}')">この記録を削除</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderDashboard() {
+      const dogs = getDogs();
+      const visits = getVisits();
+      const today = todayStr();
+
+      document.getElementById("dogCount").textContent = dogs.length;
+      document.getElementById("visitCount").textContent = visits.length;
+      document.getElementById("todayVisitCount").textContent = visits.filter(v => v.visitDate === today).length;
+
+      const dogsMap = Object.fromEntries(dogs.map(d => [d.dogId, d]));
+      const recent = visits.slice(0, 5);
+
+      const recentArea = document.getElementById("recentVisits");
+      if (!recent.length) {
+        recentArea.innerHTML = "まだ記録がありません。";
+        return;
+      }
+
+      recentArea.innerHTML = recent.map(v => {
+        const dog = dogsMap[v.dogId];
+        return `
+          <div class="list-item">
+            <strong>${escapeHtml(dog ? dog.dogName : v.dogId)}</strong>
+            <div class="small">${escapeHtml(v.visitDate)} / 担当: ${escapeHtml(v.staffName || "-")}</div>
+            <div style="margin-top:6px;">${renderBadges(v.services)} ${renderBadges(v.conditions)}</div>
+            ${v.nextNote ? `<div class="small" style="margin-top:6px;">次回: ${escapeHtml(shortText(v.nextNote, 50))}</div>` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderBadges(arr) {
+      if (!arr || !arr.length) return "";
+      return arr.map(item => `<span class="badge">${escapeHtml(item)}</span>`).join("");
+    }
+
+    function deleteDog(dogId) {
+      if (!confirm("このワンちゃん情報を削除しますか？関連する履歴も削除されます。")) return;
+
+      const dogs = getDogs().filter(d => d.dogId !== dogId);
+      const visits = getVisits().filter(v => v.dogId !== dogId);
+      saveDogs(dogs);
+      saveVisits(visits);
+      refreshDogSelectors();
+      renderDogList();
+      renderHistory();
+      renderDashboard();
+    }
+
+    function deleteVisit(visitId) {
+      if (!confirm("この訪問記録を削除しますか？")) return;
+
+      const visits = getVisits().filter(v => v.id !== visitId);
+      saveVisits(visits);
+      renderHistory();
+      renderDashboard();
+    }
+
+    function selectDogForVisit(dogId) {
+      showTab("visitForm");
+      document.getElementById("visitDogSelect").value = dogId;
+      updatePricePreview();
+    }
+
+    function showDogHistory(dogId) {
+      showTab("history");
+      document.getElementById("historyDogSelect").value = dogId;
+      renderHistory();
+    }
+
+    function todayStr() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function shortText(text, len) {
+      return text.length > len ? text.slice(0, len) + "..." : text;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[s]));
+    }
+
+    function init() {
+      createCheckboxes("serviceGroup", services, "service");
+      createCheckboxes("conditionGroup", conditions, "cond");
+      createCheckboxes("skinGroup", skins, "skin");
+      createCheckboxes("earGroup", ears, "ear");
+      createCheckboxes("footGroup", feet, "foot");
+      createCheckboxes("faceGroup", faces, "face");
+      createCheckboxes("moveGroup", moves, "move");
+
+      document.getElementById("visitDate").value = todayStr();
+      document.getElementById("basePrice").value = "16000";
+      document.getElementById("extraPrice").value = "0";
+      document.getElementById("discount").value = "0";
+
+      refreshDogSelectors();
+      renderDogList();
+      renderHistory();
+      renderDashboard();
+      updatePricePreview();
+    }
+
+    init();
+  </script>
+</body>
+</html>
