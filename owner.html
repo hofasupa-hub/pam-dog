@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ワンちゃん育成PAM（連携版）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #eef4f8;
+      color: #234;
+    }
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #d8e3ea;
+      padding: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    header p {
+      margin: 6px 0 0;
+      color: #567;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .dog-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .dog-title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .dog-meta {
+      color: #567;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 20px;
+      color: #245;
+    }
+    .sub {
+      color: #567;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .row > * {
+      flex: 1;
+      min-width: 220px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #456;
+      font-size: 13px;
+    }
+    select, textarea, input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #cddde6;
+      font-size: 14px;
+      background: #fff;
+    }
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+    button {
+      border: none;
+      background: #3b6fe2;
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #91a9b3;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+    }
+    .summary-box {
+      background: #f4f9fc;
+      border: 1px solid #d8e9f0;
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .summary-box strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #245;
+      font-size: 14px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #dff0f7;
+      color: #245;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+    .timeline-item {
+      border: 1px solid #dce8ee;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #fbfdfe;
+    }
+    .timeline-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .timeline-date { color: #678; font-size: 13px; }
+    .badge-owner, .badge-trimmer {
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .badge-owner { color: #1c6a39; }
+    .badge-trimmer { color: #7a2ba7; }
+    .empty {
+      color: #789;
+      font-size: 14px;
+      padding: 10px 0;
+    }
+    .notice {
+      background: #fff8e8;
+      border: 1px solid #efdfb2;
+      color: #6e5b22;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .safe {
+      background: #f2fbf5;
+      border: 1px solid #d4ecd9;
+      color: #275c35;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-top: 12px;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ワンちゃん育成PAM（連携版）</h1>
+    <p>ワンちゃんケアPAM設計2 が保存したデータを読み込んで、飼い主向けの見え方に整えて表示します。</p>
+  </header>
+
+  <div class="wrap">
+    <div class="notice">
+      これは <strong>pamDogs_v2</strong> と <strong>pamVisits_v2</strong> を読む版です。<br>
+      同じブラウザ・同じ保存領域でワンちゃんケアPAM設計2を使っているときだけ連携します。<br>
+      <strong>「暮らし環境の気づき（homeNotice）」はこの画面では表示しません。</strong>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">見るワンちゃんを選ぶ</h2>
+      <div class="row">
+        <div>
+          <label for="dogSelect">ワンちゃん</label>
+          <select id="dogSelect"></select>
+        </div>
+      </div>
+      <div class="safe" id="connectionStatus"></div>
+    </div>
+
+    <div class="card" id="dogProfileCard">
+      <div class="dog-head">
+        <div>
+          <div class="dog-title" id="dogNameView">🐶 -</div>
+          <div class="dog-meta" id="dogMetaView">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">この子の最近のケアまとめ</h2>
+      <div class="summary-grid">
+        <div class="summary-box">
+          <strong>全体状態</strong>
+          <div id="conditionsView">まだ記録がありません</div>
+        </div>
+        <div class="summary-box">
+          <strong>毛・皮膚</strong>
+          <div id="skinsView">まだ記録がありません</div>
+        </div>
+        <div class="summary-box">
+          <strong>耳</strong>
+          <div id="earsView">まだ記録がありません</div>
+        </div>
+        <div class="summary-box">
+          <strong>爪・足回り</strong>
+          <div id="feetView">まだ記録がありません</div>
+        </div>
+        <div class="summary-box">
+          <strong>目・口・表情</strong>
+          <div id="facesView">まだ記録がありません</div>
+        </div>
+        <div class="summary-box">
+          <strong>動き・姿勢</strong>
+          <div id="movesView">まだ記録がありません</div>
+        </div>
+      </div>
+      <div class="safe" style="margin-top:12px;">
+        <strong>ご家庭からの気づき</strong><br>
+        <span id="familyNoticeView">まだ記録がありません</span>
+      </div>
+      <div class="safe">
+        <strong>次回申し送り</strong><br>
+        <span id="nextNoteView">まだ記録がありません</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">飼い主メモ</h2>
+      <div class="sub">ここは飼い主側だけのメモ欄です。ワンちゃんケアPAM設計2のデータは壊しません。</div>
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label for="ownerMemo">今日の様子</label>
+          <textarea id="ownerMemo" placeholder="例：今日はよく食べた、少しかゆそうだった、散歩で元気だった、など"></textarea>
+        </div>
+      </div>
+      <button id="saveOwnerMemoBtn">飼い主メモを保存</button>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">この子のタイムライン</h2>
+      <div id="timelineArea"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY_DOGS = 'pamDogs_v2';
+    const STORAGE_KEY_VISITS = 'pamVisits_v2';
+    const STORAGE_KEY_OWNER_NOTES = 'pamOwnerNotes_v1';
+
+    function getDogs() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_DOGS) || '[]');
+    }
+
+    function getVisits() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_VISITS) || '[]');
+    }
+
+    function getOwnerNotes() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_OWNER_NOTES) || '[]');
+    }
+
+    function saveOwnerNotes(notes) {
+      localStorage.setItem(STORAGE_KEY_OWNER_NOTES, JSON.stringify(notes));
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, s => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[s]));
+    }
+
+    function todayStr() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function renderTags(arr) {
+      if (!arr || !arr.length) return 'まだ記録がありません';
+      return arr.map(item => `<span class="tag">${escapeHtml(item)}</span>`).join('');
+    }
+
+    function getSelectedDogId() {
+      return document.getElementById('dogSelect').value;
+    }
+
+    function getSelectedDog() {
+      const dogs = getDogs();
+      const dogId = getSelectedDogId();
+      return dogs.find(d => d.dogId === dogId);
+    }
+
+    function getDogVisits(dogId) {
+      return getVisits()
+        .filter(v => v.dogId === dogId)
+        .sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
+    }
+
+    function getDogOwnerNotes(dogId) {
+      return getOwnerNotes()
+        .filter(n => n.dogId === dogId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function refreshDogSelect() {
+      const dogs = getDogs();
+      const select = document.getElementById('dogSelect');
+      const current = select.value;
+
+      if (!dogs.length) {
+        select.innerHTML = '<option value="">ワンちゃんケアPAM設計2で先に登録してください</option>';
+        document.getElementById('connectionStatus').innerHTML = 'まだ <strong>pamDogs_v2</strong> にワンちゃんがありません。まずワンちゃんケアPAM設計2で登録してください。';
+        return;
+      }
+
+      select.innerHTML = dogs.map(d => `<option value="${escapeHtml(d.dogId)}">${escapeHtml(d.dogName)} / ${escapeHtml(d.dogId)} / ${escapeHtml(d.breed || '犬種未入力')}</option>`).join('');
+
+      const exists = dogs.some(d => d.dogId === current);
+      if (exists) select.value = current;
+
+      const selectedDog = getSelectedDog();
+      document.getElementById('connectionStatus').innerHTML = selectedDog
+        ? `現在は <strong>${escapeHtml(selectedDog.dogName)}</strong>（犬番号: ${escapeHtml(selectedDog.dogId)}）を表示しています。`
+        : 'ワンちゃんを選んでください。';
+    }
+
+    function renderDogProfile() {
+      const dog = getSelectedDog();
+      const nameView = document.getElementById('dogNameView');
+      const metaView = document.getElementById('dogMetaView');
+
+      if (!dog) {
+        nameView.textContent = '🐶 -';
+        metaView.innerHTML = '表示できるワンちゃんがいません。';
+        return;
+      }
+
+      nameView.textContent = `🐶 ${dog.dogName}`;
+      metaView.innerHTML = `
+        ${escapeHtml(dog.breed || '犬種未入力')} / ${escapeHtml(dog.age || '-')}歳 / ${escapeHtml(dog.sex || '-')}<br>
+        飼い主：${escapeHtml(dog.ownerName || '-')} / 犬番号：${escapeHtml(dog.dogId)} / 家庭番号：${escapeHtml(dog.familyId || '-')}
+      `;
+    }
+
+    function renderLatestVisitSummary() {
+      const dog = getSelectedDog();
+      const ids = ['conditionsView','skinsView','earsView','feetView','facesView','movesView'];
+      ids.forEach(id => document.getElementById(id).innerHTML = 'まだ記録がありません');
+      document.getElementById('familyNoticeView').textContent = 'まだ記録がありません';
+      document.getElementById('nextNoteView').textContent = 'まだ記録がありません';
+
+      if (!dog) return;
+
+      const visits = getDogVisits(dog.dogId);
+      if (!visits.length) return;
+
+      const latest = visits[0];
+      document.getElementById('conditionsView').innerHTML = renderTags(latest.conditions);
+      document.getElementById('skinsView').innerHTML = renderTags(latest.skins);
+      document.getElementById('earsView').innerHTML = renderTags(latest.ears);
+      document.getElementById('feetView').innerHTML = renderTags(latest.feet);
+      document.getElementById('facesView').innerHTML = renderTags(latest.faces);
+      document.getElementById('movesView').innerHTML = renderTags(latest.moves);
+      document.getElementById('familyNoticeView').textContent = latest.familyNotice || 'まだ記録がありません';
+      document.getElementById('nextNoteView').textContent = latest.nextNote || 'まだ記録がありません';
+    }
+
+    function renderTimeline() {
+      const area = document.getElementById('timelineArea');
+      const dog = getSelectedDog();
+      if (!dog) {
+        area.innerHTML = '<div class="empty">ワンちゃんを選ぶと表示されます。</div>';
+        return;
+      }
+
+      const visits = getDogVisits(dog.dogId).map(v => ({
+        type: 'visit',
+        date: v.visitDate,
+        raw: v
+      }));
+
+      const notes = getDogOwnerNotes(dog.dogId).map(n => ({
+        type: 'owner',
+        date: n.date,
+        raw: n
+      }));
+
+      const merged = [...visits, ...notes].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (!merged.length) {
+        area.innerHTML = '<div class="empty">まだ記録がありません。</div>';
+        return;
+      }
+
+      area.innerHTML = merged.map(item => {
+        if (item.type === 'visit') {
+          const v = item.raw;
+          return `
+            <div class="timeline-item">
+              <div class="timeline-head">
+                <div class="badge-trimmer">✂️ トリマー記録</div>
+                <div class="timeline-date">${escapeHtml(v.visitDate)}</div>
+              </div>
+              <div>${renderTags(v.services)}</div>
+              <div style="margin-top:8px;">${renderTags(v.conditions)} ${renderTags(v.skins)} ${renderTags(v.ears)} ${renderTags(v.feet)} ${renderTags(v.faces)} ${renderTags(v.moves)}</div>
+              ${v.familyNotice ? `<div class="safe"><strong>ご家庭からの気づき</strong><br>${escapeHtml(v.familyNotice)}</div>` : ''}
+              ${v.nextNote ? `<div class="safe"><strong>次回申し送り</strong><br>${escapeHtml(v.nextNote)}</div>` : ''}
+            </div>
+          `;
+        }
+
+        const n = item.raw;
+        return `
+          <div class="timeline-item">
+            <div class="timeline-head">
+              <div class="badge-owner">🧑‍🦱 飼い主メモ</div>
+              <div class="timeline-date">${escapeHtml(n.date)}</div>
+            </div>
+            <div>${escapeHtml(n.text)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function saveOwnerMemo() {
+      const dog = getSelectedDog();
+      if (!dog) {
+        alert('先にワンちゃんを選んでください。');
+        return;
+      }
+
+      const text = document.getElementById('ownerMemo').value.trim();
+      if (!text) {
+        alert('メモを書いてください。');
+        return;
+      }
+
+      const notes = getOwnerNotes();
+      notes.unshift({
+        id: 'ON-' + Date.now(),
+        dogId: dog.dogId,
+        date: todayStr(),
+        text
+      });
+      saveOwnerNotes(notes);
+      document.getElementById('ownerMemo').value = '';
+      renderTimeline();
+    }
+
+    function renderAll() {
+      refreshDogSelect();
+      renderDogProfile();
+      renderLatestVisitSummary();
+      renderTimeline();
+    }
+
+    document.getElementById('dogSelect').addEventListener('change', renderAll);
+    document.getElementById('saveOwnerMemoBtn').addEventListener('click', saveOwnerMemo);
+
+    window.addEventListener('storage', renderAll);
+
+    renderAll();
+  </script>
+</body>
+</html>
